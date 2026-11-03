@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice Template Designer</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#fff; --ink:#1c2430; --muted:#6b7686; --line:#dfe3ea;
+    --brand:#2557d6; --brand-ink:#fff; --ok:#17803d; --warn:#b26a00; --err:#c0392b;
+    --sel:#e8efff; --radius:8px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14171c; --panel:#1c2027; --ink:#e7eaf0; --muted:#98a2b3; --line:#2f3641; --sel:#23314f; --brand:#6d97ff; --brand-ink:#0b1020; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:6px;cursor:pointer}
+  button:hover{border-color:var(--brand)}
+  button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:600}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  input[type=text],select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+  .muted{color:var(--muted)}
+  .top{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap}
+  .brand{font-weight:700;font-size:16px}
+  .brand small{font-weight:400;color:var(--muted);margin-left:6px}
+  .steps{display:flex;gap:6px;color:var(--muted)}
+  .steps b{color:var(--ink)}
+  .spacer{flex:1}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:14px 16px}
+  .card h2{margin:0 0 8px;font-size:15px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .dzs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:10px}
+  .dz{border:2px dashed var(--line);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:.15s}
+  .dz:hover,.dz.over{border-color:var(--brand);background:var(--sel)}
+  .dz .t{font-weight:600}
+  .dz .chip{margin-top:6px;font-size:12px;color:var(--muted);word-break:break-all}
+  .dz .chip.ok{color:var(--ok)}
+  details.help{margin-top:10px;color:var(--muted)}
+  details.help ol{margin:6px 0 0 18px;padding:0}
+
+  #workspace{display:grid;grid-template-columns:230px minmax(0,1fr) 320px;gap:12px;margin:0 16px 90px;align-items:start}
+  @media (max-width:1100px){#workspace{grid-template-columns:1fr}}
+  .pane{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);min-width:0}
+  .pane h3{margin:0;padding:10px 12px;font-size:13px;border-bottom:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  #groups{max-height:70vh;overflow:auto}
+  .g{padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:8px;align-items:baseline}
+  .g:hover{background:var(--sel)}
+  .g.on{background:var(--sel);border-left:3px solid var(--brand);padding-left:9px}
+  .g .b{font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;background:var(--line);color:var(--muted)}
+  .g .p{flex:1;word-break:break-all}
+  .g .c{color:var(--muted);font-size:12px}
+  #center{padding:10px;overflow:auto;max-height:78vh}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .seg button{border-radius:0}
+  .seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}
+  .seg button.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+  details.map{margin-bottom:10px;border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+  details.map .mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+  details.map label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:2px}
+  table.grid{border-collapse:collapse;width:100%}
+  table.grid th{position:sticky;top:0;background:var(--panel);text-align:left;font-size:12px;color:var(--muted);padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.grid td{padding:2px 3px;border-bottom:1px solid var(--line)}
+  table.grid tr.sel td{background:var(--sel)}
+  table.grid input.cell{width:100%;min-width:70px;border-color:transparent;background:transparent}
+  table.grid input.cell:focus,table.grid input.cell:hover{border-color:var(--line);background:var(--panel)}
+  table.grid input.bind{min-width:230px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .act{white-space:nowrap}
+  .act button{padding:1px 6px}
+  .stage{overflow:auto;background:repeating-conic-gradient(#0000000a 0 25%,#0000 0 50%) 0 0/20px 20px;border:1px solid var(--line);border-radius:6px;padding:16px}
+  .paper{position:relative;background:#fff;color:#111;box-shadow:0 2px 12px #0003;margin:0 auto;overflow:hidden}
+  .box{position:absolute;border:1px dashed #2557d6aa;background:#2557d614;font-size:11px;line-height:1.15;overflow:hidden;cursor:move;padding:1px 3px;user-select:none;touch-action:none;white-space:nowrap;text-overflow:ellipsis}
+  .box.sel{border:2px solid #d6336c;background:#d6336c1c;z-index:5}
+  .box .rz{position:absolute;right:0;bottom:0;width:9px;height:9px;background:#d6336c;cursor:nwse-resize}
+  .tabs{display:flex;border-bottom:1px solid var(--line)}
+  .tabs button{flex:1;border:0;border-radius:0;border-bottom:2px solid transparent;background:transparent;padding:9px}
+  .tabs button.on{border-bottom-color:var(--brand);font-weight:600}
+  #side .body{padding:10px;max-height:70vh;overflow:auto}
+  .f{display:flex;flex-direction:column;margin-bottom:8px;gap:2px}
+  .f label{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .f textarea{min-height:70px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+  .pf{border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-bottom:6px}
+  .pf .n{font-weight:600}
+  .pf code{display:block;font-size:11px;color:var(--muted);word-break:break-all}
+  .pf .s{font-size:12px}
+  .pf .btns{margin-top:4px;display:flex;gap:6px}
+  .pf .btns button{padding:2px 8px;font-size:12px}
+  .cat{font-size:11px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;letter-spacing:.05em}
+  #exportBar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:30}
+  #exportBar input[type=text]{width:230px}
+  #check{position:fixed;right:16px;bottom:64px;width:min(520px,calc(100vw - 32px));max-height:50vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 30px #0004;z-index:40;padding:10px 12px}
+  #check li{margin:6px 0;list-style:none}
+  #check ul{padding:0;margin:6px 0 0}
+  .lv{display:inline-block;min-width:44px;text-align:center;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff}
+  .lv.error{background:var(--err)}.lv.warn{background:var(--warn)}.lv.info{background:#5b6b82}
+  #toast{position:fixed;left:50%;transform:translateX(-50%);top:70px;z-index:60;display:flex;flex-direction:column;gap:6px}
+  #toast div{background:#1c2430;color:#fff;padding:8px 14px;border-radius:6px;box-shadow:0 4px 16px #0004;max-width:80vw}
+  #toast div.err{background:var(--err)}
+  .mod{color:var(--warn);font-weight:600}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Invoice Template Designer <small>Zoho POS print profile &amp; field details</small></div>
+  <div class="steps"><span id="st1"><b>1 Load</b></span> › <span id="st2">2 Edit</span> › <span id="st3">3 Check &amp; export</span></div>
+  <div class="spacer"></div>
+  <button id="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+  <button id="redo" title="Redo (Ctrl+Y)">↷ Redo</button>
+  <a href="/" class="muted">← Barcode Builder</a>
+</header>
+
+<section class="card" id="loadPanel">
+  <h2>1. Load your template files</h2>
+  <div class="row">
+    <label>Start from a preset:
+      <select id="preset"><option value="">Loading…</option></select>
+    </label>
+    <button id="loadPreset" class="primary" disabled>Load preset</button>
+    <span class="muted" id="presetNote"></span>
+    <div class="spacer"></div>
+    <button id="resume" hidden>Resume last session</button>
+  </div>
+  <div class="dzs">
+    <div class="dz" id="dz-profile" tabindex="0">
+      <div class="t">Print profile JSON</div>
+      <div class="muted">Drop <code>printProfileDetail…json</code> here or click</div>
+      <div class="chip" id="chip-profile">not loaded</div>
+      <input type="file" accept=".json,application/json" hidden id="file-profile">
+    </div>
+    <div class="dz" id="dz-fields" tabindex="0">
+      <div class="t">Print field details JSON</div>
+      <div class="muted">Drop <code>printFieldDetails…json</code> here or click</div>
+      <div class="chip" id="chip-fields">not loaded</div>
+      <input type="file" accept=".json,application/json" hidden id="file-fields">
+    </div>
+  </div>
+  <p class="muted" style="margin:8px 0 0">Tip: you can drop both files at once on either box; they are matched by file name. Everything stays in your browser until you export.</p>
+  <details class="help"><summary>How does this work with Zoho?</summary>
+    <ol>
+      <li>Export <b>print profile details</b> and <b>print field details</b> JSON from the POS (or use a preset above).</li>
+      <li>Edit here: move/resize fields, change which POS field each box is bound to, add or remove rows.</li>
+      <li>Export both files (or a ZIP) and import them in the Zoho Admin tool for the end user's domain.</li>
+    </ol>
+  </details>
+</section>
+
+<main id="workspace" hidden>
+  <aside class="pane">
+    <h3>Sections</h3>
+    <div id="groups"></div>
+  </aside>
+  <section class="pane" id="center"></section>
+  <aside class="pane" id="side">
+    <div class="tabs">
+      <button id="tab-row" class="on">Selected row</button>
+      <button id="tab-pos">POS fields</button>
+    </div>
+    <div class="body" id="sideBody"></div>
+  </aside>
+</main>
+
+<datalist id="posfields"></datalist>
+
+<footer id="exportBar" hidden>
+  <button id="btnCheck">✔ Check</button>
+  <span class="muted">Save as:</span>
+  <input type="text" id="nameProfile" placeholder="printProfileDetail.json" title="Profile file name">
+  <input type="text" id="nameFields" placeholder="printFieldDetails.json" title="Field details file name">
+  <button id="expProfile">⬇ Profile</button>
+  <button id="expFields">⬇ Fields</button>
+  <button id="expZip" class="primary">⬇ Both (ZIP)</button>
+  <span class="spacer"></span>
+  <span id="modState" class="muted"></span>
+  <button id="resetAll" title="Discard all edits and return to the loaded files">Reset edits</button>
+</footer>
+
+<div id="check" hidden></div>
+<div id="toast"></div>
+
+<script src="/js/invoice-core.js"></script>
+<script src="/js/invoice-app.js"></script>
+</body>
+</html>
