@@ -1,0 +1,13 @@
+The "release" folder and the .exe do NOT exist in this zip. They are created by building.
+
+OPTION A - on a Windows PC with internet:
+  1. Unzip this folder.
+  2. Double-click BUILD-INSTALLER.bat (installs Node.js if needed; run it again after that).
+  3. Wait 3-10 minutes. The "release" folder opens with:
+     Invoice Designer for Zoho POS Setup 1.0.0.exe   <- the installer
+
+OPTION B - no local setup (GitHub builds it for you):
+  1. Create a free GitHub repo and upload everything in this folder (including the .github folder).
+  2. Open the Actions tab -> "Build Windows installer" -> Run workflow.
+  3. When it finishes, download "Invoice-Designer-Windows-Installer" from the run page.
+     Unzip it to get the .exe.

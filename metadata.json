@@ -1,8 +1,6 @@
 {
-  "name": "Barcode Builder",
-  "description": "Customizable barcode label generator and Zoho POS invoice format designer with visual layout, POS field binding, and JSON export.",
-  "prompt": "Barcode Builder",
-  "capabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "name": "Zoho POS Invoice Designer",
+  "description": "Visual customization tool for Zoho POS invoice formats, Print Profile Details, and Print Field Details JSON with PrintModel field binding, WYSIWYG canvas, and live preview.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
